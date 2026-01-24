@@ -7,3 +7,6 @@ pulumi-setup() { npm run pulumi:setup -- --properties "../$1" --auto; }
 gitacp() {
     git add -A && git commit -m "$1" && git push
 }
+
+
+# source <(curl -s https://raw.githubusercontent.com/azoth-tech/cdn-assets/refs/heads/main/scripts/tools.sh)
