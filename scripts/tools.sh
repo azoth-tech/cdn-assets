@@ -4,7 +4,7 @@ pulumi-cleanup() { npm run pulumi:cleanup -- --stack $1 --auto --remove-stack; }
 
 pulumi-setup() { npm run pulumi:setup -- --properties "../$1" --auto; }
 
- pulumi-trash{
+ pulumi-trash(){
   rm -rf .instances
   rm -rf infrastructure/.pulumi; rm infrastructure/Pulumi.*.yaml
 }
