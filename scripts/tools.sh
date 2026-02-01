@@ -3,7 +3,6 @@
 pulumi-cleanup() { npm run pulumi:cleanup -- --stack $1 ; }
 
 pulumi-setup() { npm run pulumi:setup -- --properties "../$1"; }
-/Users/dvpandian/WebstormProjects/pulumi/instances/worker2-authkeystone1-workers-dev/.wrangler
 
 export-d1() {
     if [ -z "$1" ]; then
