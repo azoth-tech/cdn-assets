@@ -59,13 +59,12 @@ import-d1() {
     
     echo "SQL: $sql_file,Database: d1_db_$service_name , Config: $config_path"
     
-    # Confirm before destructive operation
-    read -p "This will overwrite existing data. Continue? (y/N) " -n 1 -r
-    echo
-    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+    read -r "response?This will overwrite existing data. Continue? (y/N) "
+    if [[ ! "$response" =~ ^[Yy]$ ]]; then
         echo "Aborted"
         return 1
     fi
+
     
     npx wrangler d1 execute "d1_db_$service_name" \
         --remote \
