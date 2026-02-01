@@ -1,8 +1,14 @@
 #!/bin/sh
 
-pulumi-cleanup() { npm run pulumi:cleanup -- --stack $1 ; }
+pulumi-cleanup() { 
+    echo "npm run pulumi:cleanup -- --stack $1";
+    npm run pulumi:cleanup -- --stack $1 ; 
+}
 
-pulumi-setup() { npm run pulumi:setup -- --properties "../$1"; }
+pulumi-setup() { 
+    echo "npm run pulumi:setup -- --properties ../$1"
+    npm run pulumi:setup -- --properties "../$1"; 
+}
 
 export-d1() {
     if [ -z "$1" ]; then
