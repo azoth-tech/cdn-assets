@@ -4,11 +4,10 @@ pulumi-list() {
     npm run pulumi:list;
 }
 pulumi-cleanup() { 
-    pulumi-list();
+    pulumi-list;
     echo "npm run pulumi:cleanup -- --stack $1";
     npm run pulumi:cleanup -- --stack $1 ; 
 }
-
 pulumi-setup() { 
     echo "npm run pulumi:setup -- --properties ../$1"
     npm run pulumi:setup -- --properties "../$1"; 
@@ -18,7 +17,6 @@ pulumi-trash() {
         echo "Usage: pulumi-trash <stackname>"
         return 1
     fi
-
     local SEARCH_NAME="$1"
     local SEARCH_DIR="./pulumi"
     
@@ -51,7 +49,8 @@ pulumi-trash() {
     echo ""
     
     # Ask for confirmation
-    read -p "Do you want to delete all these files/folders? (yes/no): " CONFIRM
+    printf "Do you want to delete all these files/folders? (yes/no): "
+    read CONFIRM
     
     if [ "$CONFIRM" = "yes" ]; then
         echo "Deleting..."
@@ -65,7 +64,8 @@ pulumi-trash() {
     else
         echo "Deletion cancelled."
     fi
-}export-d1() {
+}
+export-d1() {
     if [ -z "$1" ]; then
         echo "Usage: export-d1 <stackname>"
         return 1
@@ -94,25 +94,20 @@ pulumi-trash() {
         return 1
     fi
 }
-
-
 import-d1() {
     if [ -z "$1" ]; then
         echo "Usage: import-d1 <stackname> [sql_file]"
         return 1
     fi
-
     local full_name=$1
     local service_name="${full_name%%-*}"
     local config_path="pulumi/instances/$full_name/wrangler.toml"
-
     local sql_file="${2:-./data-${service_name}.sql}"
     
     if [ ! -f "$config_path" ]; then
         echo "Error: Configuration file not found: $config_path"
         return 1
     fi
-
     if [ ! -f "$sql_file" ]; then
         echo "Error: SQL file not found: $sql_file"
         return 1
@@ -120,12 +115,12 @@ import-d1() {
     
     echo "SQL: $sql_file,Database: d1_db_$service_name , Config: $config_path"
     
-    read -r "response?This will overwrite existing data. Continue? (y/N) "
-    if [[ ! "$response" =~ ^[Yy]$ ]]; then
-        echo "Aborted"
-        return 1
-    fi
-
+    printf "This will overwrite existing data. Continue? (y/N) "
+    read response
+    case "$response" in
+        [Yy]* ) ;;
+        * ) echo "Aborted"; return 1;;
+    esac
     
     npx wrangler d1 execute "d1_db_$service_name" \
         --remote \
@@ -142,6 +137,3 @@ import-d1() {
 gitacp() {
     git add -A && git commit -m "$*" && git push && git --no-pager diff --name-status HEAD~1
 }
-
-
-# source <(curl -s https://raw.githubusercontent.com/azoth-tech/cdn-assets/refs/heads/main/scripts/tools.sh)
