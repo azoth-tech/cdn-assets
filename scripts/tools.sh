@@ -1,6 +1,10 @@
 #!/bin/sh
-
+pulumi-list() { 
+    echo "npm run pulumi:list";
+    npm run pulumi:list;
+}
 pulumi-cleanup() { 
+    pulumi-list();
     echo "npm run pulumi:cleanup -- --stack $1";
     npm run pulumi:cleanup -- --stack $1 ; 
 }
@@ -9,8 +13,59 @@ pulumi-setup() {
     echo "npm run pulumi:setup -- --properties ../$1"
     npm run pulumi:setup -- --properties "../$1"; 
 }
+pulumi-trash() {
+    if [ -z "$1" ]; then
+        echo "Usage: pulumi-trash <stackname>"
+        return 1
+    fi
 
-export-d1() {
+    local SEARCH_NAME="$1"
+    local SEARCH_DIR="./pulumi"
+    
+    # Check if pulumi directory exists
+    if [ ! -d "$SEARCH_DIR" ]; then
+        echo "Error: Directory '$SEARCH_DIR' does not exist"
+        return 1
+    fi
+    
+    echo "Searching for files and folders named: $SEARCH_NAME"
+    echo "Search directory: $SEARCH_DIR"
+    echo "================================================"
+    
+    # Find all matching files and directories
+    local MATCHES=$(find "$SEARCH_DIR" -name "$SEARCH_NAME" 2>/dev/null)
+    
+    if [ -z "$MATCHES" ]; then
+        echo "No matches found for '$SEARCH_NAME'"
+        return 0
+    fi
+    
+    # Display all matches
+    echo "Found the following matches:"
+    echo "$MATCHES"
+    echo ""
+    
+    # Count matches
+    local COUNT=$(echo "$MATCHES" | wc -l)
+    echo "Total matches: $COUNT"
+    echo ""
+    
+    # Ask for confirmation
+    read -p "Do you want to delete all these files/folders? (yes/no): " CONFIRM
+    
+    if [ "$CONFIRM" = "yes" ]; then
+        echo "Deleting..."
+        echo "$MATCHES" | while read -r item; do
+            if [ -e "$item" ]; then
+                rm -rf "$item"
+                echo "Deleted: $item"
+            fi
+        done
+        echo "Deletion complete!"
+    else
+        echo "Deletion cancelled."
+    fi
+}export-d1() {
     if [ -z "$1" ]; then
         echo "Usage: export-d1 <stackname>"
         return 1
