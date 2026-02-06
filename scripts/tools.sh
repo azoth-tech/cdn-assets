@@ -143,3 +143,8 @@ gitpulumisub() {
   git commit -m "Add pulumi-cloudflare submodule"
   git push
 }
+gitForce(){
+    git add .
+    git commit -m "Force sync local to remote"
+    git push --force origin main
+}
