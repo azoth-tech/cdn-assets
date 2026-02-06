@@ -137,7 +137,7 @@ import-d1() {
 gitacp() {
     git add -A && git commit -m "$*" && git push && git --no-pager diff --name-status HEAD~1
 }
-gitsubpulumi() {
+gitpulumisub() {
   git submodule add -b main https://github.com/azoth-tech/pulumi-cloudflare.git pulumi-cloudflare
   git add .gitmodules pulumi-cloudflare
   git commit -m "Add pulumi-cloudflare submodule"
