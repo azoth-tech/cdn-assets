@@ -137,14 +137,60 @@ import-d1() {
 gitacp() {
     git add -A && git commit -m "$*" && git push && git --no-pager diff --name-status HEAD~1
 }
-gitpulumisub() {
-  git submodule add -b main https://github.com/azoth-tech/pulumi-cloudflare.git pulumi-cloudflare
-  git add .gitmodules pulumi-cloudflare
-  git commit -m "Add pulumi-cloudflare submodule"
-  git push
-}
 gitForce(){
     git add .
     git commit -m "Force sync local to remote"
     git push --force origin main
 }
+gitpulumisub () {
+  SUBMODULE_URL="https://github.com/azoth-tech/pulumi-cloudflare.git"
+  SUBMODULE_PATH="pulumi-cloudflare"
+  SUBMODULE_BRANCH="main"
+
+  # Must be inside a git repo
+  git rev-parse --is-inside-work-tree >/dev/null 2>&1 || {
+    echo "Not inside a git repository"
+    return 1
+  }
+
+  if [ ! -d "$SUBMODULE_PATH/.git" ]; then
+    echo "Adding submodule $SUBMODULE_PATH"
+
+    git submodule add -b "$SUBMODULE_BRANCH" "$SUBMODULE_URL" "$SUBMODULE_PATH"
+    git add .gitmodules "$SUBMODULE_PATH"
+    git commit -m "Add pulumi-cloudflare submodule (main branch)"
+
+  else
+    echo "Submodule exists — force updating from remote"
+
+    cd "$SUBMODULE_PATH" || return 1
+    git fetch origin
+    git checkout "$SUBMODULE_BRANCH"
+    git reset --hard "origin/$SUBMODULE_BRANCH"
+    cd - >/dev/null || return 1
+
+    git add "$SUBMODULE_PATH"
+    git commit -m "Force update pulumi-cloudflare submodule from origin/main"
+  fi
+
+  git submodule status
+}
+gitinit () {
+  if [ -z "$1" ]; then
+    echo "Usage: gitinit <repo-url>"
+    return 1
+  fi
+
+  # Prevent re-init
+  if [ -d .git ]; then
+    echo "Git repository already initialized"
+    return 1
+  fi
+
+  git init
+  git branch -M main
+  git remote add origin "$1"
+
+  git status
+}
+
