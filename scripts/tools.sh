@@ -176,12 +176,13 @@ gitpulumisub () {
   git submodule status
 }
 gitinit () {
+  set -e
+
   if [ -z "$1" ]; then
     echo "Usage: gitinit <repo-url>"
     return 1
   fi
 
-  # Prevent re-init
   if [ -d .git ]; then
     echo "Git repository already initialized"
     return 1
@@ -191,6 +192,12 @@ gitinit () {
   git branch -M main
   git remote add origin "$1"
 
+
+  git add .
+  git commit -m "Initial commit"
+
+  # Push to remote
+  git push -u origin main
+
   git status
 }
-
