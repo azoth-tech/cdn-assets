@@ -176,7 +176,6 @@ gitpulumisub () {
   git submodule status
 }
 gitinit () {
-
   if [ -z "$1" ]; then
     echo "Usage: gitinit <repo-url>"
     return 1
@@ -191,12 +190,17 @@ gitinit () {
   git branch -M main
   git remote add origin "$1"
 
-
+  # Try to commit if there are files
+  touch .gitignore  # ensures there's at least one file
   git add .
-  git commit -m "Initial commit"
+  if git diff --cached --quiet; then
+    echo "Nothing to commit yet"
+  else
+    git commit -m "Initial commit"
+  fi
 
-  # Push to remote
-  git push -u origin main
+  # Try to push (won't crash if remote fails)
+  git push -u origin main || echo "Push failed (maybe remote is empty or no permissions)"
 
   git status
 }
