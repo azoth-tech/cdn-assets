@@ -191,7 +191,6 @@ gitinit () {
   git remote add origin "$1"
 
   # Try to commit if there are files
-  touch .gitignore  # ensures there's at least one file
   git add .
   if git diff --cached --quiet; then
     echo "Nothing to commit yet"
