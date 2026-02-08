@@ -176,7 +176,6 @@ gitpulumisub () {
   git submodule status
 }
 gitinit () {
-  set -e
 
   if [ -z "$1" ]; then
     echo "Usage: gitinit <repo-url>"
