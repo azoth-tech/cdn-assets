@@ -170,7 +170,7 @@ done < "$CONFIG_FILE"
 
 # ---- check dependencies ----------------------------------------------------
 deps=(ssh docker scp)
-[[ -n "$DOPPLER_PROJECT" ]] && deps+=(doppler)
+[[ -n "$DOPPLER_PROJECT" ]] && deps+=(doppler jq)
 
 echo "==> Checking dependencies..."
 missing=0
@@ -191,15 +191,21 @@ DOPPLER_KEY_NAMES=()
 if [[ -n "$DOPPLER_PROJECT" ]]; then
   [[ -n "${DOPPLER_TOKEN:-}" ]] || err "DOPPLER_TOKEN is not exported"
   echo "==> Fetching secrets from Doppler ($DOPPLER_PROJECT / $DOPPLER_CONFIG)"
-  DOPPLER_OUT="$(doppler secrets download -p "$DOPPLER_PROJECT" -c "$DOPPLER_CONFIG" --format docker --no-file)"
-  set -a; eval "$DOPPLER_OUT"; set +a
-
-  # Collect the secret key names from Doppler. The resolve pass below loops
-  # over these names, so the list of variables lives in Doppler and is not
-  # hardcoded in this script.
-  while IFS= read -r _dkey; do
-    [[ -n "$_dkey" ]] && DOPPLER_KEY_NAMES+=("$_dkey")
-  done < <(doppler secrets --only-names -p "$DOPPLER_PROJECT" -c "$DOPPLER_CONFIG")
+  # JSON + jq, never `eval`. The `docker`/`env` formats emit KEY=value with
+  # embedded newlines escaped as a literal \n and no quoting, so eval'ing them
+  # word-splits any value containing spaces (the rest of the line is then run
+  # as a command) and eats the backslashes. That breaks PEM secrets such as
+  # AGENT_CA_CERT. NUL-delimited jq output round-trips values byte for byte,
+  # newlines and all. This also yields the key names, so the resolve pass
+  # below still gets its list from Doppler rather than from this script.
+  DOPPLER_JSON="$(doppler secrets download -p "$DOPPLER_PROJECT" -c "$DOPPLER_CONFIG" --format json --no-file)"
+  while IFS= read -r -d '' _dkv; do
+    _dkey="${_dkv%%=*}"
+    [[ "$_dkey" =~ ^[a-zA-Z_][a-zA-Z_0-9]*$ ]] || continue
+    export "$_dkey=${_dkv#*=}"
+    DOPPLER_KEY_NAMES+=("$_dkey")
+  done < <(printf '%s' "$DOPPLER_JSON" | jq -j 'to_entries[] | "\(.key)=\(.value)\u0000"')
+  unset DOPPLER_JSON
   if [[ ${#DOPPLER_KEY_NAMES[@]} -gt 0 ]]; then
     printf '  %s\n' "${DOPPLER_KEY_NAMES[@]}"
   fi
