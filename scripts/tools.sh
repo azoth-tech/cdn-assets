@@ -254,11 +254,6 @@ gitinit () {
 
   git status
 }
-claude-lmstudio(){
-  export ANTHROPIC_BASE_URL="http://localhost:1234"
-  export ANTHROPIC_AUTH_TOKEN="lmstudio"
-  echo "Anthropic env enabled"
-}
 claude-clear(){
   unset ANTHROPIC_BASE_URL
   unset ANTHROPIC_AUTH_TOKEN
@@ -338,3 +333,28 @@ filebase-s3() {
 }
 alias plist=pulumi-list
 alias pclean=pulumi-cleanup
+
+# Usage: dump <dbname> <host> [port]
+dump() {
+  local db="$1"
+  local host="$2"
+  local port="${3:-5432}"
+
+  pg_dump \
+    -h "$host" \
+    -p "$port" \
+    -U dbadmin \
+    -d "$db" \
+    -Fc \
+    -f "${db}-$(date +%Y-%m-%d).dump"
+}
+
+# Usage: dump-employee <host> [port]
+dump-employee() {
+  dump employee "$1" "${2:-5432}"
+}
+
+# Production employee DB
+dump-employee-prod() {
+  dump employee "103.189.89.83"
+}
